@@ -238,11 +238,15 @@ jobs:
           tree bundles
 
       - name: Tauri Updater Signature
-        if: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
+          if [ -z "$TAURI_PRIVATE_KEY" ]; then
+            echo "TAURI_PRIVATE_KEY not set; skipping updater signature (fork/self-built)."
+            exit 0
+          fi
+
           npm install -g @tauri-apps/cli
 
           echo "Removing existing .sig files to regenerate with Tauri updater keys..."
