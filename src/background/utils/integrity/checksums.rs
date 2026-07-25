@@ -91,6 +91,13 @@ fn verify_external_signature(file: &Path, signature_file: &Path, key_base64: &st
     let checksums_content = std::fs::read(file)?;
     let signature_content = std::fs::read_to_string(signature_file)?;
 
+    // Unsigned build (fork / self-built): no real signature to verify, rely on
+    // checksum comparison only. See build.rs sign_sha256sums.
+    if signature_content.trim() == slu_utils::signature::UNSIGNED_MARKER {
+        log::warn!("Bundle is UNSIGNED; skipping signature check (checksums still enforced).");
+        return Ok(());
+    }
+
     slu_utils::signature::verify_minisign(&checksums_content, &signature_content, key_base64)?;
     log::trace!("Signature verification successful for {}", file.display());
     Ok(())
